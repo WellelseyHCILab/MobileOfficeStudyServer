@@ -3,19 +3,43 @@ var app = express();
 var mysql = require('mysql');
 var fs = require('fs');
 var bodyParser = require('body-parser');
-
+var expressip = require('express-ip');
+var cookieParser = require('cookie-parser');
+var session = require('express-session');
+var MySQLStore = require('express-mysql-session')(session);
+//print out console.logs if debug is true
+var debug = true;
 
 // for parsing application/xwww-
 app.use(bodyParser.urlencoded({extended: true}));
 
-//create the connection parameters
-var con = mysql.createConnection({
+//for getting IP address info
+app.use(expressip().getIpInfoMiddleware);
+
+app.use(cookieParser());
+
+//connection parameters
+var options = {
  	host: "0.0.0.0",
  	user: "mobileoffice",
  	password: "UtJsHCbKJ33Tvav",
 	database: "mobileoffice_db",
 	port: 3306
-});
+}
+
+var con = mysql.createConnection(options);
+
+var sessionStore = new MySQLStore({}, con);
+ 
+//initialize session
+app.use(session({
+    key: 'gHjKrqgyAk',
+    secret: 'V44GiruXLF',
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false
+}));
+
 
 //establish connection with the database
 con.connect(function(err) {
@@ -27,32 +51,78 @@ con.connect(function(err) {
 var server = app.listen(8133, function () {
  	var host = server.address().address
  	var port = server.address().port
-	console.log("Example app listening at http://%s:%s", host, port);
+	console.log("App listening at http://%s:%s", host, port);
 });
 
-//handling the redirect
-app.get('/consentform/',function(req,res){
-	fs.readFile('0_consent.html', function(err,data){
-		if(err){
-			return console.error(err);
-		}
-		res.writeHead(200, {'Content-Type': 'text/html'});
-		res.write(data);
-        res.end();
-	});
+//route for index.html page after submission, sends users to consent form
+app.post('/start/',function(req,res){
+	if(debug){console.log("Starting route...\n");}
+	res.redirect('https://cs.wellesley.edu/~mobileoffice/study/0_consent.html');
+    res.end();
 });
+
 
 //handling the submission of the consent form
 app.post('/consentform/',function(req,res){
-	console.log('body');
-    // the bodyParse creates this, as JS object with the form data
-    console.log(req.body);
+	//if user has already submitted the form, send them to the next page.
+	if(req.session.usrid || req.session.ip)
+	 {
+		if(debug){
+			console.log("Consent form has already been submitted for..."+req.session.usrid);
+		};
+		res.redirect('https://cs.wellesley.edu/~mobileoffice/study/1_background.html');
+				res.end();
+   	} 
+	//if this is the first time the user submits the consent form.
+	else
+	  {
+		//gets IP adress and stores in the session
+		var ipAddress = req.ipInfo.ip;
+		req.session.ip = ipAddress;
 
-	req.on('data',function(data){
-		console.log('data:');
-		console.log(data.toString('utf8'));	
-	});
+		//gets the name and date
+		var name = req.body.name;
+		var date = req.body.date;
 
+		//adds the name, IP adress, and time stamp (called StartTime) to verify when users began the survey to the Users table
+		var d = new Date();
+
+		var usrSql = "INSERT INTO Users (Name,StartTime,IpAddress) VALUES ('"+name+"','"+d+"','"+ipAddress+"')";
+
+		con.query(usrSql, function (err, result) {
+			if (err) {throw err;} 
+			else{
+				storeUserID();
+			}
+		});
+
+		//gets and stores the user ID of the user who just submitted the form
+		function storeUserID(){
+			var getIDSql = "select UserId from Users where Name='"+name+"' AND StartTime='"+d+"' AND IpAddress='"+ipAddress+"'";
+
+			con.query(getIDSql, function (err, result) {
+				if (err) {throw err;} 
+				else {
+					//sends users to the next part of the study
+					consentFormInsert(result[0].UserId);
+					req.session.usrid = result[0].UserId;
+					res.redirect('https://cs.wellesley.edu/~mobileoffice/study/1_background.html');
+					res.end();
+				};
+			});
+	}
+	
+	//adds the name, id, and date of the consent form submission to Consentform table
+	function consentFormInsert(userID){
+		var consentSql = "INSERT INTO Consentform (FormDate, Name, UserId, IpAddress) VALUES ('"+date+"','"+name+"','"+userID+"','"+ipAddress+"')";
+	
+		con.query(consentSql, function (err, result) {
+		if (err) throw err;
+			console.log("1 record inserted in Consent table");
+		});
+	}
+
+	//adds data to the consentform log
 	fs.appendFile('consentform.log',
 	                 // JSON is easy to parse
 	                 JSON.stringify(req.body)+'\n',
@@ -61,10 +131,95 @@ app.post('/consentform/',function(req,res){
 	                         console.log('error writing to consentform.log: '+err);
 	                     }
 	                 });
+   }
+});
 
-    res.redirect('http://cs.wellesley.edu/~mobileoffice/study/1_background.html');
+//redirect users to a randomly selected work task after they complete the example scenario
+app.post('/worktask/',function(req,res){
+	
+	if(debug){
+		console.log("\nIn work task...");
+		console.log("The session usrid is..."+req.session.usrid);
+	}
+	
+	//Generate a random number, 0 or 1 inclusive, to determine which task they go to
+	var randNum = Math.floor(Math.random() * 2);
+	
+	if(debug){randNum = 1;}
+	
+	if (randNum){
+		if(debug){console.log("randNum is: "+randNum);}
+		res.redirect('https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t1.html');
+    	res.end();
+	} 
+	else 
+	{
+		if(debug){console.log("randNum is: "+randNum);}
+		res.redirect('https://cs.wellesley.edu/~mobileoffice/study/8_presentation_t1.html');
+    	res.end();
+	}
+});
+
+//get user submission from Podcast tasks
+app.post('/podcast/',function(req,res){
+	if(debug){
+		console.log("Task type is..."+req.body.taskType);
+		console.log("Task num is..."+req.body.taskNum);
+		console.log("Select is..."+req.body.select);
+		console.log("Textarea is..."+req.body.textarea);
+	}
+	
+	var taskType = req.body.taskType;
+	var taskNum = req.body.taskNum;
+	var select = req.body.select;
+	var textArea = req.body.textarea;
+	var userID = req.session.usrid
+	
+	//if submit button has already been pressed, update the session
+	if (req.session.podSubmitted) 
+	{
+		var podcastUpdate = 'UPDATE Podcast SET PreferredChoice='+select+', Explanation='+textArea+'WHERE UserId='+userID
+		
+		con.query(podcastUpdate, function (err, result) {
+		if (err) throw err;
+			console.log("1 response inserted in Podacst table");
+		});
+	} 
+	else 
+	{
+		req.session.podSubmitted = 1;		
+
+		//query to insert user response into table
+//		var podcastSql = 'INSERT INTO Podcast (TaskNum, UserId, PreferredChoice, Explanation) VALUES (?,?,?,?)';
+		con.query('INSERT INTO Podcast (TaskNum, UserId, PreferredChoice, Explanation) VALUES ('+taskNum+','+userID+','+select+','+textArea+')', function (err, result) {
+		if (err) throw err;
+			console.log("1 response inserted in Podacst table");
+		});
+		
+	}
+	
+	res.redirect('https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t2.html');
     res.end();
 });
 
+//redirect people to a randomly selected leisure task after they complete one of the work scenarios
+app.post('/leisuretask/',function(req,res){
+	
+	//Generate a random number, 0 or 1 inclusive, to determine which task they go to
+	var randNum = Math.floor(Math.random() * 2);
+	if(debug){console.log("randNum is: "+randNum);}
+	if (randNum){
+		res.redirect('https://cs.wellesley.edu/~mobileoffice/study/6_karaoke_t1.html');
+    	res.end();
+	} else {
+		res.redirect('https://cs.wellesley.edu/~mobileoffice/study/7_audiobook_t1.html');
+    	res.end();
+	}
+});
 
+
+app.post('/end/',function(req,res){
+	req.session.destroy();
+	sessionStore.close();
+});
 
