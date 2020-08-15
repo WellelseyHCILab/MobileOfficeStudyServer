@@ -25,7 +25,7 @@ const options = {
  	user: "mobileoffice",
  	password: "UtJsHCbKJ33Tvav",
 	database: "mobileoffice_db",
-	port: 3306,
+	port: 3306
 }
 
 const con = mysql.createConnection(options);
