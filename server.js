@@ -37,7 +37,10 @@ app.use(session({
     secret: 'V44GiruXLF',
     store: sessionStore,
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+	clearExpired: true,
+	expiration: 86400000,
+	checkExpirationInterval: 900000
 }));
 
 
@@ -56,7 +59,10 @@ var server = app.listen(8133, function () {
 
 //route for index.html page after submission, sends users to consent form
 app.post('/start/',function(req,res){
-	if(debug){console.log("Starting route...\n");}
+	if(debug){console.log("Starting route and destroying session vars...\n");
+			 req.session.destroy();
+			 sessionStore.close();
+			 }
 	res.redirect('https://cs.wellesley.edu/~mobileoffice/study/0_consent.html');
     res.end();
 });
@@ -65,7 +71,7 @@ app.post('/start/',function(req,res){
 //handling the submission of the consent form
 app.post('/consentform/',function(req,res){
 	//if user has already submitted the form, send them to the next page.
-	if(req.session.usrid || req.session.ip)
+	if(req.session.usrid)
 	 {
 		if(debug){
 			console.log("Consent form has already been submitted for..."+req.session.usrid);
@@ -78,7 +84,6 @@ app.post('/consentform/',function(req,res){
 	  {
 		//gets IP adress and stores in the session
 		var ipAddress = req.ipInfo.ip;
-		req.session.ip = ipAddress;
 
 		//gets the name and date
 		var name = req.body.name;
@@ -178,27 +183,34 @@ app.post('/podcast/',function(req,res){
 	//if submit button has already been pressed, update the session
 	if (req.session.podSubmitted) 
 	{
-		var podcastUpdate = 'UPDATE Podcast SET PreferredChoice='+select+', Explanation='+textArea+'WHERE UserId='+userID
+		var podcastUpdate = 'UPDATE Podcast SET PreferredChoice="'+select+'", Explanation="'+textArea+'" WHERE UserId='+userID
 		
 		con.query(podcastUpdate, function (err, result) {
 		if (err) throw err;
-			console.log("1 response inserted in Podacst table");
+			console.log("1 response updated in Podcast table");
 		});
 	} 
 	else 
 	{
-		req.session.podSubmitted = 1;		
+		req.session.podSubmitted = 1;	
+		
+		//get session var for Blob
+		req.session.
 
 		//query to insert user response into table
-//		var podcastSql = 'INSERT INTO Podcast (TaskNum, UserId, PreferredChoice, Explanation) VALUES (?,?,?,?)';
-		con.query('INSERT INTO Podcast (TaskNum, UserId, PreferredChoice, Explanation) VALUES ('+taskNum+','+userID+','+select+','+textArea+')', function (err, result) {
+		con.query('INSERT INTO Podcast (TaskNum, UserId, PreferredChoice, Explanation) VALUES ("'+taskNum+'",'+userID+',"'+select+'","'+textArea+'")', function (err, result) {
 		if (err) throw err;
-			console.log("1 response inserted in Podacst table");
+			console.log("1 response inserted in Podcast table");
 		});
-		
 	}
 	
-	res.redirect('https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t2.html');
+	var nextTask = parseInt(taskNum, 10)+1;
+	
+	if(debug){ console.log("Next task num is..."+nextTask)
+			   console.log("Full URL for nextTask is..."+'https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t'+nextTask+'.html')
+			 }
+	
+	res.redirect('https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t'+nextTask+'.html');
     res.end();
 });
 
