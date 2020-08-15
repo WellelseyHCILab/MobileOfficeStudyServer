@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 var mysql = require('mysql');
 var fs = require('fs');
+var https = require("https");
 var bodyParser = require('body-parser');
 var expressip = require('express-ip');
 var cookieParser = require('cookie-parser');
@@ -19,17 +20,17 @@ app.use(expressip().getIpInfoMiddleware);
 app.use(cookieParser());
 
 //connection parameters
-var options = {
+const options = {
  	host: "0.0.0.0",
  	user: "mobileoffice",
  	password: "UtJsHCbKJ33Tvav",
 	database: "mobileoffice_db",
-	port: 3306
+	port: 3306,
 }
 
-var con = mysql.createConnection(options);
+const con = mysql.createConnection(options);
 
-var sessionStore = new MySQLStore({}, con);
+const sessionStore = new MySQLStore({}, con);
  
 //initialize session
 app.use(session({
@@ -50,12 +51,25 @@ con.connect(function(err) {
  	console.log("Connected!");
 });
 
+//get certificates for server
+const optionsSecure = {
+    key: fs.readFileSync('/../certificates/cs.wellesley.edu.key'),
+    cert: fs.readFileSync('/../certificates/cs_wellesley_edu_cert.cer')
+};
+
+// serverconnection over https
+https.createServer(optionsSecure, app).listen(3306, function () {
+  var host = server.address().address;
+  var port = server.address().port;
+  console.log("App listening at http://%s:%s", host, port);
+})
+
 //listening port
-var server = app.listen(8133, function () {
- 	var host = server.address().address
- 	var port = server.address().port
-	console.log("App listening at http://%s:%s", host, port);
-});
+//var server = app.listen(8133, function () {
+// 	var host = server.address().address
+// 	var port = server.address().port
+//	console.log("App listening at http://%s:%s", host, port);
+//});
 
 //route for index.html page after submission, sends users to consent form
 app.post('/start/',function(req,res){
