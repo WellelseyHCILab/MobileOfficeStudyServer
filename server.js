@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 var mysql = require('mysql');
 var fs = require('fs');
-var https = require("https");
+var https = require('https');
 var bodyParser = require('body-parser');
 var expressip = require('express-ip');
 var cookieParser = require('cookie-parser');
@@ -51,25 +51,17 @@ con.connect(function(err) {
  	console.log("Connected!");
 });
 
+
 //get certificates for server
 const optionsSecure = {
-    key: fs.readFileSync('/../certificates/cs.wellesley.edu.key'),
-    cert: fs.readFileSync('/../certificates/cs_wellesley_edu_cert.cer')
+    key: fs.readFileSync('../certs/cs.wellesley.edu.key'),
+    cert: fs.readFileSync('../certs/cs_wellesley_edu_cert.cer')
 };
 
 // serverconnection over https
-https.createServer(optionsSecure, app).listen(3306, function () {
-  var host = server.address().address;
-  var port = server.address().port;
-  console.log("App listening at http://%s:%s", host, port);
+https.createServer(optionsSecure, app).listen(8133, function () {
+  console.log("App listening at port 8133");
 })
-
-//listening port
-//var server = app.listen(8133, function () {
-// 	var host = server.address().address
-// 	var port = server.address().port
-//	console.log("App listening at http://%s:%s", host, port);
-//});
 
 //route for index.html page after submission, sends users to consent form
 app.post('/start/',function(req,res){
