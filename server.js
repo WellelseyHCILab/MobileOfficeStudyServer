@@ -68,7 +68,7 @@ app.post('/start/',function(req,res){
 	if(debug){console.log("Starting route and destroying session vars...\n");
 			 req.session.destroy();
 			 sessionStore.close();
-			 }
+		}
 	res.redirect('https://cs.wellesley.edu/~mobileoffice/study/0_consent.html');
     res.end();
 });
@@ -94,6 +94,13 @@ app.post('/consentform/',function(req,res){
 		//gets the name and date
 		var name = req.body.name;
 		var date = req.body.date;
+
+		if(debug){
+			console.log("Name is...");
+			console.log(name);
+			console.log("Date is...");
+			console.log(date);
+		}
 
 		//adds the name, IP adress, and time stamp (called StartTime) to verify when users began the survey to the Users table
 		var d = new Date();
@@ -135,13 +142,13 @@ app.post('/consentform/',function(req,res){
 
 	//adds data to the consentform log
 	fs.appendFile('consentform.log',
-	                 // JSON is easy to parse
-	                 JSON.stringify(req.body)+'\n',
-	                 function (err, data) {
-	                     if(err) {
-	                         console.log('error writing to consentform.log: '+err);
-	                     }
-	                 });
+     // JSON is easy to parse
+     JSON.stringify(req.body)+'\n',
+     function (err, data) {
+         if(err) {
+             console.log('error writing to consentform.log: '+err);
+         }
+     });
    }
 });
 
@@ -173,68 +180,81 @@ app.post('/worktask/',function(req,res){
 
 //get user submission from Podcast tasks
 app.post('/podcast/',function(req,res){
-	if(debug){
-		console.log("Task type is..."+req.body.taskType);
-		console.log("Task num is..."+req.body.taskNum);
-		console.log("Select is..."+req.body.select);
-		console.log("Textarea is..."+req.body.textarea);
-	}
 	
 	var taskType = req.body.taskType;
 	var taskNum = req.body.taskNum;
 	var select = req.body.select;
 	var textArea = req.body.textarea;
-	var userID = req.session.usrid
+	var userID = req.session.usrid;
 	
-	//if submit button has already been pressed, update the session
-	if (req.session.podSubmitted) 
-	{
-		var podcastUpdate = 'UPDATE Podcast SET PreferredChoice="'+select+'", Explanation="'+textArea+'" WHERE UserId='+userID
-		
-		con.query(podcastUpdate, function (err, result) {
-		if (err) throw err;
-			console.log("1 response updated in Podcast table");
-		});
-	} 
-	else 
-	{
-		req.session.podSubmitted = 1;	
-		
-		//get session var for Blob
-		req.session.
-
-		//query to insert user response into table
-		con.query('INSERT INTO Podcast (TaskNum, UserId, PreferredChoice, Explanation) VALUES ("'+taskNum+'",'+userID+',"'+select+'","'+textArea+'")', function (err, result) {
-		if (err) throw err;
-			console.log("1 response inserted in Podcast table");
-		});
+	if(debug){
+		console.log("*********req body*******");
+		console.log(req.body);
+		console.log("Task type is..."+JSON.stringify(req.body.taskType));
+		console.log("Task num is..."+JSON.stringify(req.body.taskNum));
+		console.log("Select is..."+JSON.stringify(req.body.select));
+		console.log("Textarea is..."+JSON.stringify(req.body.textarea));
 	}
+
+		//if submit button has already been pressed, update the session
+		// if (req.session.podSubmitted) 
+		// {
+		// 	var podcastUpdate = 'UPDATE Podcast SET PreferredChoice="'+select+'", Explanation="'+textArea+'" WHERE UserId='+userID
+			
+		// 	con.query(podcastUpdate, function (err, result) {
+		// 	if (err) throw err;
+		// 		console.log("1 response updated in Podcast table");
+		// 	});
+		// } 
+		// else 
+		// {
+		// 	req.session.podSubmitted = 1;	
+			
+		// 	var podQuery = 'INSERT INTO Podcast (TaskNum, UserId, PreferredChoice, Explanation) VALUES ("'+taskNum+'",'+userID+',"'+select+'","'+textArea+'")'
+			
+		// 	if(debug){
+		// 		console.log("Pod query is...");
+		// 		console.log(podQuery);
+		// 		console.log("\n");
+		// 	}
+			
+		// 	//query to insert user response into table
+		// 	con.query(podQuery, function (err, result) {
+		// 	if (err) throw err;
+		// 		console.log("1 response inserted in Podcast table");
+		// 	});
+		// }
+
+		// var nextTask = parseInt(taskNum, 10)+1;
+
 	
-	var nextTask = parseInt(taskNum, 10)+1;
-	
-	if(debug){ console.log("Next task num is..."+nextTask)
+	if(debug){ console.log("Next task num is..."+nextTask);
 			   console.log("Full URL for nextTask is..."+'https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t'+nextTask+'.html')
 			 }
 	
-	res.redirect('https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t'+nextTask+'.html');
+	//res.redirect('https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t2.html');
+    res.setHeader("Access-Control-Allow-Origin","https://cs.wellesley.edu");
+    res.setHeader("Vary","Origin");
     res.end();
 });
 
 //redirect people to a randomly selected leisure task after they complete one of the work scenarios
 app.post('/leisuretask/',function(req,res){
 	
+	var videoStorage = sessionStorage.getItem('blobURL');
+	console.log('Blob URL is...');
+	console.log(videoStorage);
+
 	//Generate a random number, 0 or 1 inclusive, to determine which task they go to
 	var randNum = Math.floor(Math.random() * 2);
 	if(debug){console.log("randNum is: "+randNum);}
-	if (randNum){
-		res.redirect('https://cs.wellesley.edu/~mobileoffice/study/6_karaoke_t1.html');
+	if (randNum){		res.redirect('https://cs.wellesley.edu/~mobileoffice/study/6_karaoke_t1.html');
     	res.end();
 	} else {
 		res.redirect('https://cs.wellesley.edu/~mobileoffice/study/7_audiobook_t1.html');
     	res.end();
 	}
 });
-
 
 app.post('/end/',function(req,res){
 	req.session.destroy();
