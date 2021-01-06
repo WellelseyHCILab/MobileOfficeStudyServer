@@ -1,23 +1,53 @@
 var express = require('express');
-var app = express();
+var cors = require('cors');
+const app = express();
 var mysql = require('mysql');
 var fs = require('fs');
 var https = require('https');
+ var http = require("http");
+ var util = require('util');
 var bodyParser = require('body-parser');
 var expressip = require('express-ip');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var MySQLStore = require('express-mysql-session')(session);
+var path = require('path');
+var multer  = require('multer'); 
+//var storage = multer.memoryStorage(); 
+//var upload = multer({ dest: 'uploads/' });
+var storage = multer.diskStorage({
+	destination: function (req, file, cb) {
+	  cb(null, 'uploads/')
+	},
+	filename: function (req, file, cb) {
+	//cb(null, Date.now() + '.webm') //Appending .webm
+	cb(null,  Date.now()+ '-' + file.originalname) 
+	}
+  })
+  
+  var upload = multer({ storage: storage });
+
 //print out console.logs if debug is true
 var debug = true;
 
 // for parsing application/xwww-
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
 
 //for getting IP address info
 app.use(expressip().getIpInfoMiddleware);
 
 app.use(cookieParser());
+
+//for handling CORS errors
+app.use(cors({credentials: true, origin: true}));
+app.use((req,res,next) => {
+	res.setHeader("Access-Control-Allow-Origin", "*");
+	res.setHeader("Access-Control-Allow-Credentials", "true");
+	res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+	res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Vary");
+	next();
+});
 
 //connection parameters
 const options = {
@@ -36,7 +66,7 @@ const sessionStore = new MySQLStore({}, con);
 app.use(session({
     key: 'gHjKrqgyAk',
     secret: 'V44GiruXLF',
-    store: sessionStore,
+	store: sessionStore,
     resave: false,
     saveUninitialized: false,
 	clearExpired: true,
@@ -60,6 +90,7 @@ const optionsSecure = {
 
 // serverconnection over https
 https.createServer(optionsSecure, app).listen(8133, function () {
+
   console.log("App listening at port 8133");
 })
 
@@ -124,8 +155,12 @@ app.post('/consentform/',function(req,res){
 					//sends users to the next part of the study
 					consentFormInsert(result[0].UserId);
 					req.session.usrid = result[0].UserId;
-					res.redirect('https://cs.wellesley.edu/~mobileoffice/study/1_background.html');
-					res.end();
+					req.session.save(function(err) {
+						// session saved
+						//debugging
+						res.redirect('https://cs.wellesley.edu/~mobileoffice/study/1_background.html');
+						res.end();
+					  })
 				};
 			});
 	}
@@ -154,7 +189,6 @@ app.post('/consentform/',function(req,res){
 
 //redirect users to a randomly selected work task after they complete the example scenario
 app.post('/worktask/',function(req,res){
-	
 	if(debug){
 		console.log("\nIn work task...");
 		console.log("The session usrid is..."+req.session.usrid);
@@ -179,63 +213,61 @@ app.post('/worktask/',function(req,res){
 });
 
 //get user submission from Podcast tasks
-app.post('/podcast/',function(req,res){
-	
+app.post('/podcast/', upload.array('blobs', 2), function(req,res){
 	var taskType = req.body.taskType;
 	var taskNum = req.body.taskNum;
 	var select = req.body.select;
 	var textArea = req.body.textarea;
-	var userID = req.session.usrid;
-	
+	var userID = req.session.usrid; 
+	var voiceVideoPath = req.files[0].path;
+	var gestureVideoPath = req.files[1].path;
+
 	if(debug){
-		console.log("*********req body*******");
-		console.log(req.body);
-		console.log("Task type is..."+JSON.stringify(req.body.taskType));
-		console.log("Task num is..."+JSON.stringify(req.body.taskNum));
-		console.log("Select is..."+JSON.stringify(req.body.select));
-		console.log("Textarea is..."+JSON.stringify(req.body.textarea));
+		console.log("Task type is..."+JSON.stringify(taskType));
+		console.log("Task num is..."+JSON.stringify(taskNum));
+		console.log("Select is..."+JSON.stringify(select));
+		console.log("Textarea is..."+JSON.stringify(textArea));
 	}
-
 		//if submit button has already been pressed, update the session
-		// if (req.session.podSubmitted) 
-		// {
-		// 	var podcastUpdate = 'UPDATE Podcast SET PreferredChoice="'+select+'", Explanation="'+textArea+'" WHERE UserId='+userID
+		if (req.session.podSubmitted) 
+		{
+			var podcastUpdate = 'UPDATE Podcast SET PreferredChoice="'+select+'", Explanation="'+textArea+'" WHERE UserId='+userID
 			
-		// 	con.query(podcastUpdate, function (err, result) {
-		// 	if (err) throw err;
-		// 		console.log("1 response updated in Podcast table");
-		// 	});
-		// } 
-		// else 
-		// {
-		// 	req.session.podSubmitted = 1;	
+			con.query(podcastUpdate, function (err, result) {
+			if (err) throw err;
+			console.log("1 response updated in Podcast table");
+			});
+		} 
+		else 
+		{
+			req.session.podSubmitted = 1;	
+			var podQuery = "INSERT INTO Podcast (TaskNum, UserId, VoiceVideo, GestureVideo, PreferredChoice, Explanation) VALUES ('"+taskNum+"',"+userID+",'"+voiceVideoPath+"','"+gestureVideoPath+"','"+select+"','"+textArea+"')";
+			if(debug){
+				console.log("Pod query is...");
+				console.log(podQuery);
+				console.log("\n");
+			}
 			
-		// 	var podQuery = 'INSERT INTO Podcast (TaskNum, UserId, PreferredChoice, Explanation) VALUES ("'+taskNum+'",'+userID+',"'+select+'","'+textArea+'")'
-			
-		// 	if(debug){
-		// 		console.log("Pod query is...");
-		// 		console.log(podQuery);
-		// 		console.log("\n");
-		// 	}
-			
-		// 	//query to insert user response into table
-		// 	con.query(podQuery, function (err, result) {
-		// 	if (err) throw err;
-		// 		console.log("1 response inserted in Podcast table");
-		// 	});
-		// }
+			//query to insert user response into table
+			con.query(podQuery, function (err, result) {
+			if (err) throw err;
+			console.log("1 response inserted in Podcast table");
+			});
+		}
 
-		// var nextTask = parseInt(taskNum, 10)+1;
+		 var nextTask = parseInt(taskNum, 10)+1;
+		 var nextURL = 'https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t'+nextTask+'.html';
 
 	
 	if(debug){ console.log("Next task num is..."+nextTask);
-			   console.log("Full URL for nextTask is..."+'https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t'+nextTask+'.html')
+			   console.log("Full URL for nextTask is..."+nextURL);
 			 }
+	res.setHeader("Access-Control-Allow-Origin","https://cs.wellesley.edu");
+	res.setHeader("Vary","Origin");
+	res.setHeader("Location",nextURL);
+	res.send(nextURL);
+	//TODO: figure out how to redirect without CORS errors
 	
-	//res.redirect('https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t2.html');
-    res.setHeader("Access-Control-Allow-Origin","https://cs.wellesley.edu");
-    res.setHeader("Vary","Origin");
-    res.end();
 });
 
 //redirect people to a randomly selected leisure task after they complete one of the work scenarios
