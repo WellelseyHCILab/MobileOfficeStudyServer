@@ -42,7 +42,7 @@ app.use(cookieParser());
 //for handling CORS errors
 app.use(cors({credentials: true, origin: true}));
 app.use((req,res,next) => {
-	res.setHeader("Access-Control-Allow-Origin", "*");
+	res.setHeader("Access-Control-Allow-Origin", "https://cs.wellesley.edu");
 	res.setHeader("Access-Control-Allow-Credentials", "true");
 	res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
 	res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Vary");
@@ -197,17 +197,22 @@ app.post('/worktask/',function(req,res){
 	//Generate a random number, 0 or 1 inclusive, to determine which task they go to
 	var randNum = Math.floor(Math.random() * 2);
 	
-	if(debug){randNum = 1;}
+	if(debug){randNum = 1}
 	
 	if (randNum){
-		if(debug){console.log("randNum is: "+randNum);}
-		res.redirect('https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t1.html');
+		//Generate a random number, 0 or 6 inclusive, to determine which podcast task to go
+		let randTaskNum = 1+Math.floor(Math.random() * 5);
+		//if(debug){console.log(`randNum is: +${randNum}, entering podcast task ${randTaskNum}`);}
+		//res.redirect(`https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t${randTaskNum}.html`);
+		res.redirect(`https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t1.html`);
     	res.end();
 	} 
 	else 
 	{
-		if(debug){console.log("randNum is: "+randNum);}
-		res.redirect('https://cs.wellesley.edu/~mobileoffice/study/8_presentation_t1.html');
+		//Generate a random number, 0 or 8 inclusive, to determine which podcast task to go
+		let randTaskNum = 1+Math.floor(Math.random() * 7);
+		if(debug){console.log(`randNum is: +${randNum}, entering podcast task ${randTaskNum}`);}
+		res.redirect(`https://cs.wellesley.edu/~mobileoffice/study/8_presentation_t${randTaskNum}.html`);
     	res.end();
 	}
 });
@@ -245,45 +250,186 @@ app.post('/podcast/', upload.array('blobs', 2), function(req,res){
 			if(debug){
 				console.log("Pod query is...");
 				console.log(podQuery);
-				console.log("\n");
 			}
 			
 			//query to insert user response into table
 			con.query(podQuery, function (err, result) {
 			if (err) throw err;
 			console.log("1 response inserted in Podcast table");
+			console.log("\n");
 			});
 		}
-
-		 var nextTask = parseInt(taskNum, 10)+1;
-		 var nextURL = 'https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t'+nextTask+'.html';
-
-	
-	if(debug){ console.log("Next task num is..."+nextTask);
-			   console.log("Full URL for nextTask is..."+nextURL);
-			 }
 	res.setHeader("Access-Control-Allow-Origin","https://cs.wellesley.edu");
 	res.setHeader("Vary","Origin");
-	res.setHeader("Location",nextURL);
-	res.send(nextURL);
-	//TODO: figure out how to redirect without CORS errors
+	res.send();
+	//res.redirect('/leisuretask/');
+	res.end();
 	
 });
 
-//redirect people to a randomly selected leisure task after they complete one of the work scenarios
-app.post('/leisuretask/',function(req,res){
+//get user submission from Presentation tasks
+app.post('/presentation/', upload.array('blobs', 2), function(req,res){
+	var taskType = req.body.taskType;
+	var taskNum = req.body.taskNum;
+	var select = req.body.select;
+	var textArea = req.body.textarea;
+	var userID = req.session.usrid; 
+	var voiceVideoPath = req.files[0].path;
+	var gestureVideoPath = req.files[1].path;
+
+	if(debug){
+		console.log("Task type is..."+JSON.stringify(taskType));
+		console.log("Task num is..."+JSON.stringify(taskNum));
+		console.log("Select is..."+JSON.stringify(select));
+		console.log("Textarea is..."+JSON.stringify(textArea));
+	}
+		//if submit button has already been pressed, update the session
+		if (req.session.presentationSubmitted) 
+		{
+			var presentationUpdate = 'UPDATE Presentation SET PreferredChoice="'+select+'", Explanation="'+textArea+'" WHERE UserId='+userID
+			
+			con.query(presentationUpdate, function (err, result) {
+			if (err) throw err;
+			console.log("1 response updated in Presentation table");
+			});
+		} 
+		else 
+		{
+			req.session.presentationSubmitted = 1;	
+			var presQuery = "INSERT INTO Presentation (TaskNum, UserId, VoiceVideo, GestureVideo, PreferredChoice, Explanation) VALUES ('"+taskNum+"',"+userID+",'"+voiceVideoPath+"','"+gestureVideoPath+"','"+select+"','"+textArea+"')";
+			if(debug){
+				console.log("Pres query is...");
+				console.log(presQuery);
+			}
+			
+			//query to insert user response into table
+			con.query(presQuery, function (err, result) {
+			if (err) throw err;
+			console.log("1 response inserted in Presentation table");
+			console.log("\n");
+			});
+		}
+	res.setHeader("Access-Control-Allow-Origin","https://cs.wellesley.edu");
+	res.setHeader("Vary","Origin");
+	res.send();
 	
-	var videoStorage = sessionStorage.getItem('blobURL');
-	console.log('Blob URL is...');
-	console.log(videoStorage);
+});
+
+//get user submission from Karaoke tasks
+app.post('/karaoke/', upload.array('blobs', 2), function(req,res){
+	var taskType = req.body.taskType;
+	var taskNum = req.body.taskNum;
+	var select = req.body.select;
+	var textArea = req.body.textarea;
+	var userID = req.session.usrid; 
+	var voiceVideoPath = req.files[0].path;
+	var gestureVideoPath = req.files[1].path;
+
+	if(debug){
+		console.log("Task type is..."+JSON.stringify(taskType));
+		console.log("Task num is..."+JSON.stringify(taskNum));
+		console.log("Select is..."+JSON.stringify(select));
+		console.log("Textarea is..."+JSON.stringify(textArea));
+	}
+		//if submit button has already been pressed, update the session
+		if (req.session.karaokeSubmitted) 
+		{
+			var karaokeUpdate = 'UPDATE Karaoke SET PreferredChoice="'+select+'", Explanation="'+textArea+'" WHERE UserId='+userID
+			
+			con.query(karaokeUpdate, function (err, result) {
+			if (err) throw err;
+			console.log("1 response updated in Karaoke table");
+			});
+		} 
+		else 
+		{
+			req.session.karaokeSubmitted = 1;	
+			var karaokeQuery = "INSERT INTO Karaoke (TaskNum, UserId, VoiceVideo, GestureVideo, PreferredChoice, Explanation) VALUES ('"+taskNum+"',"+userID+",'"+voiceVideoPath+"','"+gestureVideoPath+"','"+select+"','"+textArea+"')";
+			if(debug){
+				console.log("Karaoke query is...");
+				console.log(karaokeQuery);
+			}
+			
+			//query to insert user response into table
+			con.query(karaokeQuery, function (err, result) {
+			if (err) throw err;
+			console.log("1 response inserted in Karaoke table");
+			console.log("\n");
+			});
+		}
+	res.setHeader("Access-Control-Allow-Origin","https://cs.wellesley.edu");
+	res.setHeader("Vary","Origin");
+	res.send();
+	
+});
+
+//get user submission from Audiobook tasks
+app.post('/audiobook/', upload.array('blobs', 2), function(req,res){
+	var taskType = req.body.taskType;
+	var taskNum = req.body.taskNum;
+	var select = req.body.select;
+	var textArea = req.body.textarea;
+	var userID = req.session.usrid; 
+	var voiceVideoPath = req.files[0].path;
+	var gestureVideoPath = req.files[1].path;
+
+	if(debug){
+		console.log("Task type is..."+JSON.stringify(taskType));
+		console.log("Task num is..."+JSON.stringify(taskNum));
+		console.log("Select is..."+JSON.stringify(select));
+		console.log("Textarea is..."+JSON.stringify(textArea));
+	}
+		//if submit button has already been pressed, update the session
+		if (req.session.audiobookSubmitted) 
+		{
+			var audiobookUpdate = 'UPDATE Audiobook SET PreferredChoice="'+select+'", Explanation="'+textArea+'" WHERE UserId='+userID
+			
+			con.query(audiobookUpdate, function (err, result) {
+			if (err) throw err;
+			console.log("1 response updated in Audiobook table");
+			});
+		} 
+		else 
+		{
+			req.session.audiobookSubmitted = 1;	
+			var audiobookQuery = "INSERT INTO Audiobook (TaskNum, UserId, VoiceVideo, GestureVideo, PreferredChoice, Explanation) VALUES ('"+taskNum+"',"+userID+",'"+voiceVideoPath+"','"+gestureVideoPath+"','"+select+"','"+textArea+"')";
+			if(debug){
+				console.log("Audiobook query is...");
+				console.log(audiobookQuery);
+			}
+			
+			//query to insert user response into table
+			con.query(audiobookQuery, function (err, result) {
+			if (err) throw err;
+			console.log("1 response inserted in Audiobook table");
+			console.log("\n");
+			});
+		}
+	res.setHeader("Access-Control-Allow-Origin","https://cs.wellesley.edu");
+	res.setHeader("Vary","Origin");
+	res.send();
+	
+});
+//redirect people to a randomly selected leisure task after they complete one of the work scenarios
+app.get('/leisuretask/', function(req,res){
+	if(debug){
+		console.log("\nIn leisure task...");
+		console.log("The session usrid is..."+req.session.usrid);
+	}
 
 	//Generate a random number, 0 or 1 inclusive, to determine which task they go to
 	var randNum = Math.floor(Math.random() * 2);
-	if(debug){console.log("randNum is: "+randNum);}
-	if (randNum){		res.redirect('https://cs.wellesley.edu/~mobileoffice/study/6_karaoke_t1.html');
-    	res.end();
+	if(debug){randNum=1;}
+	if (randNum){
+		//Generate a random number, 1 or 5 inclusive
+		let randTaskNum = 1+ Math.floor(Math.random() * 5);
+		res.setHeader("Access-Control-Allow-Origin","https://cs.wellesley.edu");
+		res.redirect(`https://cs.wellesley.edu/~mobileoffice/study/6_karaoke_t${randTaskNum}.html`);
+    	res.send();
 	} else {
-		res.redirect('https://cs.wellesley.edu/~mobileoffice/study/7_audiobook_t1.html');
+		let randTaskNum = 1+ Math.floor(Math.random() * 5);
+		res.setHeader("Access-Control-Allow-Origin","https://cs.wellesley.edu");
+		res.redirect(`https://cs.wellesley.edu/~mobileoffice/study/7_audiobook_t${randTaskNum}.html`);
     	res.end();
 	}
 });
