@@ -191,27 +191,27 @@ app.post('/consentform/',function(req,res){
 app.post('/worktask/',function(req,res){
 	if(debug){
 		console.log("\nIn work task...");
-		console.log("The session usrid is..."+req.session.usrid);
 	}
 	
 	//Generate a random number, 0 or 1 inclusive, to determine which task they go to
 	var randNum = Math.floor(Math.random() * 2);
 	
-	if(debug){randNum = 1}
-	
 	if (randNum){
-		//Generate a random number, 0 or 6 inclusive, to determine which podcast task to go
-		let randTaskNum = 1+Math.floor(Math.random() * 5);
-		//if(debug){console.log(`randNum is: +${randNum}, entering podcast task ${randTaskNum}`);}
-		//res.redirect(`https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t${randTaskNum}.html`);
-		res.redirect(`https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t1.html`);
+		//Generate a random number, 1 to 6 inclusive, to determine which podcast task to go
+		let randTaskNum = 1+Math.floor(Math.random() * 6);
+		if(debug){
+			console.log(`Entering podcast task ${randTaskNum}`);
+		}
+		res.redirect(`https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t${randTaskNum}.html`);
     	res.end();
 	} 
 	else 
 	{
-		//Generate a random number, 0 or 8 inclusive, to determine which podcast task to go
-		let randTaskNum = 1+Math.floor(Math.random() * 7);
-		if(debug){console.log(`randNum is: +${randNum}, entering podcast task ${randTaskNum}`);}
+		//Generate a random number, 1 to 8 inclusive, to determine which podcast task to go
+		let randTaskNum = 1+Math.floor(Math.random() * 8);
+		if(debug){
+			console.log(`Entering presentation task ${randTaskNum}`);
+		}
 		res.redirect(`https://cs.wellesley.edu/~mobileoffice/study/8_presentation_t${randTaskNum}.html`);
     	res.end();
 	}
@@ -228,7 +228,7 @@ app.post('/podcast/', upload.array('blobs', 2), function(req,res){
 	var gestureVideoPath = req.files[1].path;
 
 	if(debug){
-		console.log("Task type is..."+JSON.stringify(taskType));
+		console.log("\nTask type is..."+JSON.stringify(taskType));
 		console.log("Task num is..."+JSON.stringify(taskNum));
 		console.log("Select is..."+JSON.stringify(select));
 		console.log("Textarea is..."+JSON.stringify(textArea));
@@ -256,7 +256,6 @@ app.post('/podcast/', upload.array('blobs', 2), function(req,res){
 			con.query(podQuery, function (err, result) {
 			if (err) throw err;
 			console.log("1 response inserted in Podcast table");
-			console.log("\n");
 			});
 		}
 	res.setHeader("Access-Control-Allow-Origin","https://cs.wellesley.edu");
@@ -278,7 +277,7 @@ app.post('/presentation/', upload.array('blobs', 2), function(req,res){
 	var gestureVideoPath = req.files[1].path;
 
 	if(debug){
-		console.log("Task type is..."+JSON.stringify(taskType));
+		console.log("\nTask type is..."+JSON.stringify(taskType));
 		console.log("Task num is..."+JSON.stringify(taskNum));
 		console.log("Select is..."+JSON.stringify(select));
 		console.log("Textarea is..."+JSON.stringify(textArea));
@@ -306,7 +305,6 @@ app.post('/presentation/', upload.array('blobs', 2), function(req,res){
 			con.query(presQuery, function (err, result) {
 			if (err) throw err;
 			console.log("1 response inserted in Presentation table");
-			console.log("\n");
 			});
 		}
 	res.setHeader("Access-Control-Allow-Origin","https://cs.wellesley.edu");
@@ -326,7 +324,7 @@ app.post('/karaoke/', upload.array('blobs', 2), function(req,res){
 	var gestureVideoPath = req.files[1].path;
 
 	if(debug){
-		console.log("Task type is..."+JSON.stringify(taskType));
+		console.log("\nTask type is..."+JSON.stringify(taskType));
 		console.log("Task num is..."+JSON.stringify(taskNum));
 		console.log("Select is..."+JSON.stringify(select));
 		console.log("Textarea is..."+JSON.stringify(textArea));
@@ -354,7 +352,6 @@ app.post('/karaoke/', upload.array('blobs', 2), function(req,res){
 			con.query(karaokeQuery, function (err, result) {
 			if (err) throw err;
 			console.log("1 response inserted in Karaoke table");
-			console.log("\n");
 			});
 		}
 	res.setHeader("Access-Control-Allow-Origin","https://cs.wellesley.edu");
@@ -374,7 +371,7 @@ app.post('/audiobook/', upload.array('blobs', 2), function(req,res){
 	var gestureVideoPath = req.files[1].path;
 
 	if(debug){
-		console.log("Task type is..."+JSON.stringify(taskType));
+		console.log("\nTask type is..."+JSON.stringify(taskType));
 		console.log("Task num is..."+JSON.stringify(taskNum));
 		console.log("Select is..."+JSON.stringify(select));
 		console.log("Textarea is..."+JSON.stringify(textArea));
@@ -402,7 +399,6 @@ app.post('/audiobook/', upload.array('blobs', 2), function(req,res){
 			con.query(audiobookQuery, function (err, result) {
 			if (err) throw err;
 			console.log("1 response inserted in Audiobook table");
-			console.log("\n");
 			});
 		}
 	res.setHeader("Access-Control-Allow-Origin","https://cs.wellesley.edu");
