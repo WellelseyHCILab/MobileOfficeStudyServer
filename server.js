@@ -15,13 +15,34 @@ var path = require('path');
 var multer = require('multer');
 //var storage = multer.memoryStorage(); 
 //var upload = multer({ dest: 'uploads/' });
+
+// var storage = multer.diskStorage({
+// 	destination: function (req, file, cb) {
+// 		cb(null, 'uploads/')
+// 	},
+// 	filename: function (req, file, cb) {
+// 		//cb(null, Date.now() + '.webm') //Appending .webm
+// 		cb(null, Date.now() + '-' + file.originalname)
+// 	}
+// })
+
 var storage = multer.diskStorage({
 	destination: function (req, file, cb) {
-		cb(null, 'uploads/')
+		console.log(req.session.usrid)
+		console.log(req.body.taskNum);
+		let taskType = req.route.path;
+		let userNum = "User_"+req.session.usrid;
+		let taskNum = "task_"+req.body.taskNum;
+		let totalPath = 'uploads/'+userNum +taskType+taskNum;
+		fs.exists(totalPath, exist =>{
+			if(!exist){
+				return fs.mkdir(totalPath, {recursive: true}, error => cb(error, totalPath));
+			}
+			return cb(null, totalPath);
+		})
 	},
 	filename: function (req, file, cb) {
-		//cb(null, Date.now() + '.webm') //Appending .webm
-		cb(null, Date.now() + '-' + file.originalname)
+		cb(null, file.originalname)
 	}
 })
 
