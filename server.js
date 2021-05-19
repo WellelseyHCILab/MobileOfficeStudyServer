@@ -63,7 +63,7 @@ app.use(cookieParser());
 //for handling CORS errors
 app.use(cors({ credentials: true, origin: true }));
 app.use((req, res, next) => {
-	res.setHeader("Access-Control-Allow-Origin", "https://cs.wellesley.edu");
+	res.setHeader("Access-Control-Allow-Origin", "http://ec2-3-80-137-223.compute-1.amazonaws.com");
 	res.setHeader("Access-Control-Allow-Credentials", "true");
 	res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
 	res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Vary");
@@ -122,7 +122,7 @@ app.post('/start/', function (req, res) {
 		req.session.destroy();
 		sessionStore.close();
 	}
-	res.redirect('https://cs.wellesley.edu/~mobileoffice/study/0_consent.html');
+	res.redirect('http://ec2-3-80-137-223.compute-1.amazonaws.com/~mobileoffice/study/0_consent.html');
 	res.end();
 });
 
@@ -134,7 +134,7 @@ app.post('/consentform/', function (req, res) {
 		if (debug) {
 			console.log("Consent form has already been submitted for..." + req.session.usrid);
 		};
-		res.redirect('https://cs.wellesley.edu/~mobileoffice/study/1_background.html');
+		res.redirect('http://ec2-3-80-137-223.compute-1.amazonaws.com/~mobileoffice/study/1_background.html');
 		res.end();
 	}
 	//if this is the first time the user submits the consent form.
@@ -181,7 +181,7 @@ app.post('/consentform/', function (req, res) {
 					req.session.save(function (err) {
 						// session saved
 						//debugging
-						res.redirect('https://cs.wellesley.edu/~mobileoffice/study/1_background.html');
+						res.redirect('http://ec2-3-80-137-223.compute-1.amazonaws.com/~mobileoffice/study/1_background.html');
 						res.end();
 					})
 				};
@@ -228,7 +228,7 @@ app.post('/worktask/', function (req, res) {
 			if (debug) {
 				console.log(`Entering podcast task 1`);
 			}
-			res.redirect(`https://cs.wellesley.edu/~mobileoffice/study/5_podcast_t1.html`);
+			res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws.com/~mobileoffice/study/5_podcast_t1.html`);
 			res.end();
 		}
 		else {
@@ -237,7 +237,7 @@ app.post('/worktask/', function (req, res) {
 			if (debug) {
 				console.log(`Entering presentation task 1`);
 			}
-			res.redirect(`https://cs.wellesley.edu/~mobileoffice/study/8_presentation_t1.html`);
+			res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws.com/~mobileoffice/study/8_presentation_t1.html`);
 			res.end();
 		}
 	}
@@ -250,7 +250,7 @@ app.post('/worktask/', function (req, res) {
 			if (debug) {
 				console.log(`Entering karaoke task 1`);
 			}
-			res.redirect(`https://cs.wellesley.edu/~mobileoffice/study/6_karaoke_t1.html`);
+			res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws.com/~mobileoffice/study/6_karaoke_t1.html`);
 			res.end();
 		}
 		else {
@@ -259,7 +259,7 @@ app.post('/worktask/', function (req, res) {
 			if (debug) {
 				console.log(`Entering presentation task 1`);
 			}
-			res.redirect(`https://cs.wellesley.edu/~mobileoffice/study/7_audiobook_t1.html`);
+			res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws.com/~mobileoffice/study/7_audiobook_t1.html`);
 			res.end();
 		}
 	}
@@ -311,7 +311,7 @@ app.post('/podcast/', upload.array('blobs', 2), function (req, res) {
 			console.log("1 response inserted in Podcast table");
 		});
 	}
-	res.setHeader("Access-Control-Allow-Origin", "https://cs.wellesley.edu");
+	res.setHeader("Access-Control-Allow-Origin", "http://ec2-3-80-137-223.compute-1.amazonaws.com");
 	res.setHeader("Vary", "Origin");
 	res.send();
 	//res.redirect('/leisuretask/');
@@ -361,7 +361,7 @@ app.post('/presentation/', upload.array('blobs', 2), function (req, res) {
 			console.log("1 response inserted in Presentation table");
 		});
 	}
-	res.setHeader("Access-Control-Allow-Origin", "https://cs.wellesley.edu");
+	res.setHeader("Access-Control-Allow-Origin", "http://ec2-3-80-137-223.compute-1.amazonaws.com");
 	res.setHeader("Vary", "Origin");
 	res.send();
 
@@ -408,7 +408,7 @@ app.post('/karaoke/', upload.array('blobs', 2), function (req, res) {
 			console.log("1 response inserted in Karaoke table");
 		});
 	}
-	res.setHeader("Access-Control-Allow-Origin", "https://cs.wellesley.edu");
+	res.setHeader("Access-Control-Allow-Origin", "http://ec2-3-80-137-223.compute-1.amazonaws.com");
 	res.setHeader("Vary", "Origin");
 	res.send();
 
@@ -455,7 +455,7 @@ app.post('/audiobook/', upload.array('blobs', 2), function (req, res) {
 			console.log("1 response inserted in Audiobook table");
 		});
 	}
-	res.setHeader("Access-Control-Allow-Origin", "https://cs.wellesley.edu");
+	res.setHeader("Access-Control-Allow-Origin", "http://ec2-3-80-137-223.compute-1.amazonaws.com");
 	res.setHeader("Vary", "Origin");
 	res.send();
 
@@ -473,13 +473,13 @@ app.post('/audiobook/', upload.array('blobs', 2), function (req, res) {
 // 	if (randNum) {
 // 		//Generate a random number, 1 or 5 inclusive
 // 		let randTaskNum = 1 + Math.floor(Math.random() * 5);
-// 		res.setHeader("Access-Control-Allow-Origin", "https://cs.wellesley.edu");
-// 		res.redirect(`https://cs.wellesley.edu/~mobileoffice/study/6_karaoke_t${randTaskNum}.html`);
+// 		res.setHeader("Access-Control-Allow-Origin", "http://ec2-3-80-137-223.compute-1.amazonaws.com");
+// 		res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws.com/~mobileoffice/study/6_karaoke_t${randTaskNum}.html`);
 // 		res.send();
 // 	} else {
 // 		let randTaskNum = 1 + Math.floor(Math.random() * 5);
-// 		res.setHeader("Access-Control-Allow-Origin", "https://cs.wellesley.edu");
-// 		res.redirect(`https://cs.wellesley.edu/~mobileoffice/study/7_audiobook_t${randTaskNum}.html`);
+// 		res.setHeader("Access-Control-Allow-Origin", "http://ec2-3-80-137-223.compute-1.amazonaws.com");
+// 		res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws.com/~mobileoffice/study/7_audiobook_t${randTaskNum}.html`);
 // 		res.end();
 // 	}
 // });
