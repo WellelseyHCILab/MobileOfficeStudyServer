@@ -104,15 +104,19 @@ con.connect(function (err) {
 
 
 //get certificates for server
-const optionsSecure = {
-	key: fs.readFileSync('../certs/cs.wellesley.edu.key'),
-	cert: fs.readFileSync('../certs/cs_wellesley_edu_cert.cer')
-};
+// const optionsSecure = {
+// 	key: fs.readFileSync('../certs/cs.wellesley.edu.key'),
+// 	cert: fs.readFileSync('../certs/cs_wellesley_edu_cert.cer')
+// };
 
 // serverconnection over https
-https.createServer(optionsSecure, app).listen(8133, function () {
+// https.createServer(optionsSecure, app).listen(8133, function () {
 
-	console.log("App listening at port 8133");
+	// console.log("App listening at port 8133");
+// })
+
+app.listen(8133, () => {
+	console.log('App is running on port: 8133');
 })
 
 //route for index.html page after submission, sends users to consent form
