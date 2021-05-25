@@ -131,16 +131,15 @@ app.post('/start/', function (req, res) {
 //handling the submission of the consent form
 app.post('/consentform/', function (req, res) {
 	//if user has already submitted the form, send them to the next page.
-
-	console.log("body =>", req.body, "session =>", req.session);
-
-	return
-
 	if (req.session.usrid) {
 		if (debug) {
 			console.log("Consent form has already been submitted for..." + req.session.usrid);
 		};
-		//if this is the first time the user submits the consent form.
+		res.redirect('http://ec2-3-80-137-223.compute-1.amazonaws.com/1_background.html');
+		res.end();
+	}
+	//if this is the first time the user submits the consent form.
+	else {
 		//gets IP adress and stores in the session
 		var ipAddress = req.ipInfo.ip;
 
@@ -239,7 +238,11 @@ app.post('/worktask/', function (req, res) {
 			if (debug) {
 				console.log(`Entering presentation task 1`);
 			}
+			res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws.com/8_presentation_t1.html`);
+			res.end();
 		}
+	}
+	else {
 		if (debug) {
 			console.log("\nIn leisure task...");
 		}
