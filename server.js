@@ -123,7 +123,7 @@ app.post('/start/', function (req, res) {
 		req.session.destroy();
 		sessionStore.close();
 	}
-	res.redirect('http://ec2-3-80-137-223.compute-1.amazonaws.com/~mobileoffice/study/0_consent.html');
+	res.redirect('http://ec2-3-80-137-223.compute-1.amazonaws.com/0_consent.html');
 	res.end();
 });
 
@@ -178,7 +178,7 @@ app.post('/consentform/', function (req, res) {
 					req.session.save(function (err) {
 						// session saved
 						//debugging
-						res.redirect('http://ec2-3-80-137-223.compute-1.amazonaws.com/~mobileoffice/study/1_background.html');
+						res.redirect('http://ec2-3-80-137-223.compute-1.amazonaws.com/1_background.html');
 						res.end();
 					})
 				};
@@ -225,7 +225,7 @@ app.post('/worktask/', function (req, res) {
 			if (debug) {
 				console.log(`Entering podcast task 1`);
 			}
-			res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws.com/~mobileoffice/study/5_podcast_t1.html`);
+			res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws./5_podcast_t1.html`);
 			res.end();
 		}
 		else {
@@ -243,7 +243,7 @@ app.post('/worktask/', function (req, res) {
 			if (debug) {
 				console.log(`Entering karaoke task 1`);
 			}
-			res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws.com/~mobileoffice/study/6_karaoke_t1.html`);
+			res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws.com/6_karaoke_t1.html`);
 			res.end();
 		}
 		else {
@@ -252,7 +252,7 @@ app.post('/worktask/', function (req, res) {
 			if (debug) {
 				console.log(`Entering presentation task 1`);
 			}
-			res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws.com/~mobileoffice/study/7_audiobook_t1.html`);
+			res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws.com/7_audiobook_t1.html`);
 			res.end();
 		}
 	}
@@ -467,12 +467,12 @@ app.post('/audiobook/', upload.array('blobs', 2), function (req, res) {
 // 		//Generate a random number, 1 or 5 inclusive
 // 		let randTaskNum = 1 + Math.floor(Math.random() * 5);
 // 		res.setHeader("Access-Control-Allow-Origin", "http://ec2-3-80-137-223.compute-1.amazonaws.com");
-// 		res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws.com/~mobileoffice/study/6_karaoke_t${randTaskNum}.html`);
+// 		res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws.com/6_karaoke_t${randTaskNum}.html`);
 // 		res.send();
 // 	} else {
 // 		let randTaskNum = 1 + Math.floor(Math.random() * 5);
 // 		res.setHeader("Access-Control-Allow-Origin", "http://ec2-3-80-137-223.compute-1.amazonaws.com");
-// 		res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws.com/~mobileoffice/study/7_audiobook_t${randTaskNum}.html`);
+// 		res.redirect(`http://ec2-3-80-137-223.compute-1.amazonaws.com/7_audiobook_t${randTaskNum}.html`);
 // 		res.end();
 // 	}
 // });
