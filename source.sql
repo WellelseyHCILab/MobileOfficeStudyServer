@@ -1,9 +1,6 @@
 use mobileoffice_db;
 
 DROP TABLE IF EXISTS Consentform;
-ALTER TABLE Users DROP INDEX indexName;
-ALTER TABLE Users DROP INDEX indexID;
-ALTER TABLE Users DROP INDEX indexIP;
 DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS Podcast;
 DROP TABLE IF EXISTS Presentation;
