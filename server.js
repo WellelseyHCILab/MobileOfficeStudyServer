@@ -31,12 +31,12 @@ var storage = multer.diskStorage({
 		console.log(req.session.usrid)
 		console.log(req.body.taskNum);
 		let taskType = req.route.path;
-		let userNum = "User_"+req.session.usrid;
-		let taskNum = "task_"+req.body.taskNum;
-		let totalPath = 'uploads/'+userNum +taskType+taskNum;
-		fs.exists(totalPath, exist =>{
-			if(!exist){
-				return fs.mkdir(totalPath, {recursive: true}, error => cb(error, totalPath));
+		let userNum = "User_" + req.session.usrid;
+		let taskNum = "task_" + req.body.taskNum;
+		let totalPath = 'uploads/' + userNum + taskType + taskNum;
+		fs.exists(totalPath, exist => {
+			if (!exist) {
+				return fs.mkdir(totalPath, { recursive: true }, error => cb(error, totalPath));
 			}
 			return cb(null, totalPath);
 		})
@@ -72,7 +72,7 @@ app.use((req, res, next) => {
 
 //connection parameters
 const options = {
-	host: "0.0.0.0",
+	host: "localhost",
 	user: "mobileoffice",
 	password: "UtJsHCbKJ33Tvav",
 	database: "mobileoffice_db",
@@ -135,7 +135,7 @@ app.post('/consentform/', function (req, res) {
 		if (debug) {
 			console.log("Consent form has already been submitted for..." + req.session.usrid);
 		};
-	//if this is the first time the user submits the consent form.
+		//if this is the first time the user submits the consent form.
 		//gets IP adress and stores in the session
 		var ipAddress = req.ipInfo.ip;
 
@@ -234,7 +234,7 @@ app.post('/worktask/', function (req, res) {
 			if (debug) {
 				console.log(`Entering presentation task 1`);
 			}
-	}
+		}
 		if (debug) {
 			console.log("\nIn leisure task...");
 		}
@@ -281,7 +281,7 @@ app.post('/podcast/', upload.array('blobs', 2), function (req, res) {
 		console.log("Textarea is..." + JSON.stringify(textArea));
 	}
 	//if submit button has already been pressed, update the session
-	if (req.session["podcast"+taskNum]) {
+	if (req.session["podcast" + taskNum]) {
 		var podcastUpdate = 'UPDATE Podcast SET PreferredChoice=?, Explanation=? WHERE UserId=?';
 
 		con.query(podcastUpdate, [select, textArea, userID], function (err, result) {
@@ -290,7 +290,7 @@ app.post('/podcast/', upload.array('blobs', 2), function (req, res) {
 		});
 	}
 	else {
-		req.session["podcast"+taskNum] = true;
+		req.session["podcast" + taskNum] = true;
 		var podQuery = "INSERT INTO Podcast (TaskNum, UserId, VoiceVideo, GestureVideo, PreferredChoice, Explanation) VALUES (?,?,?,?,?,?)";
 		var podQueryForDebug = "INSERT INTO Podcast (TaskNum, UserId, VoiceVideo, GestureVideo, PreferredChoice, Explanation) VALUES ('" + taskNum + "'," + userID + ",'" + voiceVideoPath + "','" + gestureVideoPath + "','" + select + "','" + textArea + "')";
 		if (debug) {
@@ -330,7 +330,7 @@ app.post('/presentation/', upload.array('blobs', 2), function (req, res) {
 		console.log("Textarea is..." + JSON.stringify(textArea));
 	}
 	//if submit button has already been pressed, update the session
-	if (req.session["presentation"+taskNum]) {
+	if (req.session["presentation" + taskNum]) {
 		//var presentationUpdate = 'UPDATE Presentation SET PreferredChoice="'+select+'", Explanation="'+textArea+'" WHERE UserId='+userID
 		var presentationUpdate = 'UPDATE Presentation SET PreferredChoice=?, Explanation=? WHERE UserId=?';
 
@@ -340,7 +340,7 @@ app.post('/presentation/', upload.array('blobs', 2), function (req, res) {
 		});
 	}
 	else {
-		req.session["presentation"+taskNum] = true;
+		req.session["presentation" + taskNum] = true;
 		var presQuery = "INSERT INTO Presentation (TaskNum, UserId, VoiceVideo, GestureVideo, PreferredChoice, Explanation) VALUES (?,?,?,?,?,?)";
 		var presQueryForDebug = "INSERT INTO Presentation (TaskNum, UserId, VoiceVideo, GestureVideo, PreferredChoice, Explanation) VALUES ('" + taskNum + "'," + userID + ",'" + voiceVideoPath + "','" + gestureVideoPath + "','" + select + "','" + textArea + "')";
 		if (debug) {
@@ -378,7 +378,7 @@ app.post('/karaoke/', upload.array('blobs', 2), function (req, res) {
 		console.log("Textarea is..." + JSON.stringify(textArea));
 	}
 	//if submit button has already been pressed, update the session
-	if (req.session["karaoke"+taskNum]) {
+	if (req.session["karaoke" + taskNum]) {
 		//var karaokeUpdate = 'UPDATE Karaoke SET PreferredChoice="'+select+'", Explanation="'+textArea+'" WHERE UserId='+userID
 		var karaokeUpdate = 'UPDATE Karaoke SET PreferredChoice=?, Explanation=? WHERE UserId=?';
 		con.query(karaokeUpdate, [select, textArea, userID], function (err, result) {
@@ -387,7 +387,7 @@ app.post('/karaoke/', upload.array('blobs', 2), function (req, res) {
 		});
 	}
 	else {
-		req.session["karaoke"+taskNum] = true;
+		req.session["karaoke" + taskNum] = true;
 		var karaokeQuery = "INSERT INTO Karaoke (TaskNum, UserId, VoiceVideo, GestureVideo, PreferredChoice, Explanation) VALUES (?,?,?,?,?,?)";
 		var karaokeQueryForDebug = "INSERT INTO Karaoke (TaskNum, UserId, VoiceVideo, GestureVideo, PreferredChoice, Explanation) VALUES ('" + taskNum + "'," + userID + ",'" + voiceVideoPath + "','" + gestureVideoPath + "','" + select + "','" + textArea + "')";
 		if (debug) {
@@ -425,7 +425,7 @@ app.post('/audiobook/', upload.array('blobs', 2), function (req, res) {
 		console.log("Textarea is..." + JSON.stringify(textArea));
 	}
 	//if submit button has already been pressed, update the session
-	if (req.session["audiobook"+taskNum]) {
+	if (req.session["audiobook" + taskNum]) {
 		//var audiobookUpdate = 'UPDATE Audiobook SET PreferredChoice="'+select+'", Explanation="'+textArea+'" WHERE UserId='+userID
 		var audiobookUpdate = 'UPDATE Audiobook SET PreferredChoice=?, Explanation=? WHERE UserId=?';
 		con.query(audiobookUpdate, [select, textArea, userID], function (err, result) {
@@ -434,7 +434,7 @@ app.post('/audiobook/', upload.array('blobs', 2), function (req, res) {
 		});
 	}
 	else {
-		req.session["audiobook"+taskNum] = true;
+		req.session["audiobook" + taskNum] = true;
 		var audiobookQuery = "INSERT INTO Audiobook (TaskNum, UserId, VoiceVideo, GestureVideo, PreferredChoice, Explanation) VALUES (?,?,?,?,?,?)";
 		var audiobookQueryForDebug = "INSERT INTO Audiobook (TaskNum, UserId, VoiceVideo, GestureVideo, PreferredChoice, Explanation) VALUES ('" + taskNum + "'," + userID + ",'" + voiceVideoPath + "','" + gestureVideoPath + "','" + select + "','" + textArea + "')";
 		if (debug) {
@@ -482,7 +482,7 @@ app.post('/end/', function (req, res) {
 	sessionStore.close();
 });
 
-app.get("/hasdonetask", function(req, res) {
+app.get("/hasdonetask", function (req, res) {
 	res.send(req.session);
 })
 
