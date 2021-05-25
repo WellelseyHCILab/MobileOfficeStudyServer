@@ -131,6 +131,11 @@ app.post('/start/', function (req, res) {
 //handling the submission of the consent form
 app.post('/consentform/', function (req, res) {
 	//if user has already submitted the form, send them to the next page.
+
+	console.log("body =>", req.body);
+
+	return
+
 	if (req.session.usrid) {
 		if (debug) {
 			console.log("Consent form has already been submitted for..." + req.session.usrid);
