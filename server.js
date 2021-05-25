@@ -132,7 +132,7 @@ app.post('/start/', function (req, res) {
 app.post('/consentform/', function (req, res) {
 	//if user has already submitted the form, send them to the next page.
 
-	console.log("body =>", req.body);
+	console.log("body =>", req.body, "session =>", req.session);
 
 	return
 
