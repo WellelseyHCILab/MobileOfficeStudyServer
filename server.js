@@ -485,3 +485,7 @@ app.post('/end/', function (req, res) {
 app.get("/hasdonetask", function(req, res) {
 	res.send(req.session);
 })
+
+app.get('/test', function (req, res) {
+	res.send("Ok")
+});
